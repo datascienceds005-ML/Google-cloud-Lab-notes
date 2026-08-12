@@ -295,3 +295,108 @@ Manual Last Updated on May 20, 2026
 Lab Last Tested February 17, 2026
 
 Copyright 2026 Google LLC. All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.
+
+
+gcloud auth list
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud auth list
+Credentialed Accounts
+
+ACTIVE: *
+ACCOUNT: student-02-96d6f61bfddd@qwiklabs.net
+
+To set the active account, run:
+    $ gcloud config set account `ACCOUNT`
+
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ 
+
+gcloud config list project
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud config list project
+[core]
+project = qwiklabs-gcp-03-4093b17784b9
+
+Your active configuration is: [cloudshell-13680]
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ 
+
+Set the region
+Set the project region for this lab:
+
+gcloud config set compute/region europe-west1
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud config set compute/region europe-west1
+Updated property [compute/region].
+
+Use the make bucket (buckets create) command to make a bucket, replacing <YOUR_BUCKET_NAME> with a unique name that follows the bucket naming rules:
+
+gcloud storage buckets create gs://<YOUR-BUCKET-NAME>
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage buckets create gs://qwiklabs-gcp-03-4093b17784b9
+Creating gs://qwiklabs-gcp-03-4093b17784b9/...
+
+To download this image (ada.jpg) into your bucket, enter this command into Cloud Shell:
+curl https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Ada_Lovelace_portrait.jpg/800px-Ada_Lovelace_portrait.jpg --output ada.jpg
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ curl https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Ada_Lovelace_portrait.jpg/800px-Ada_Lovelace_portrait.jpg --output ada.jpg
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  2009  100  2009    0     0  40338      0 --:--:-- --:--:-- --:--:-- 41000
+
+Use the gcloud storage cp command to upload the image from the location where you saved it to the bucket you created:
+gcloud storage cp ada.jpg gs://YOUR-BUCKET-NAME
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage cp ada.jpg gs://qwiklabs-gcp-03-4093b17784b9
+Copying file://ada.jpg to gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg
+  Completed files 1/1 | 2.0kiB/2.0kiB  
+
+  Now remove the downloaded image:
+rm ada.jpg
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ rm ada.jpg
+
+Task 3. Download an object from your bucket
+Use the gcloud storage cp command to download the image you stored in your bucket to Cloud Shell:
+gcloud storage cp -r gs://
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage cp -r gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg .
+Copying gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg to file://./ada.jpg
+  Completed files 1/1 | 2.0kiB/2.0kiB 
+
+  Task 4. Copy an object to a folder in the bucket
+Use the gcloud storage cp command to create a folder called image-folder and copy the image (ada.jpg) into it:
+gcloud storage cp gs://YOUR-BUCKET-NAME/ada.jpg gs://YOUR-BUCKET-NAME/image-folder/
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage cp gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg gs://qwiklabs-gcp-03-4093b17784b9/image-folder/
+
+Copying gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg to gs://qwiklabs-gcp-03-4093b17784b9/image-folder/ada.jpg
+  Completed files 1/1 | 2.0kiB/2.0kiB 
+
+  Task 5. List contents of a bucket or folder
+Use the gcloud storage ls command to list the contents of the bucket:
+gcloud storage ls gs://YOUR-BUCKET-NAME
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage ls gs://qwiklabs-gcp-03-4093b17784b9
+gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg
+gs://qwiklabs-gcp-03-4093b17784b9/image-folder/
+
+Task 6. List details for an object
+Use the gcloud storage ls command, with the -l flag to get some details about the image file you uploaded to your bucket:
+gcloud storage ls -l gs://
+
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage ls -l gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg
+      2009  2026-08-12T17:35:54Z  gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg
+TOTAL: 1 objects, 2009 bytes (1.96kiB)
+
+Task 7. Make your object publicly accessible
+Use the gcloud storage objects update command to grant all users read permission for the object stored in your bucket:
+gcloud storage objects update gs://YOUR-BUCKET-NAME/ada.jpg --add-acl-grant=entity=allUsers,role=READER
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage objects update gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg --add-acl-grant=entity=allUsers,role=READER
+Patching gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg...                                                                                                                                         
+  Completed 1 
+
+  Task 8. Remove public access
+To remove this permission, use the command:
+gcloud storage objects update gs://YOUR-BUCKET-NAME/ada.jpg --remove-acl-grant=allUsers
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage objects update gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg --remove-acl-grant=allUsers
+Patching gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg...                                                                                                                                         
+  Completed 1  
+  ****
+  Delete objects
+Use the gcloud storage rm command to delete an object - the image file in your bucket:
+gcloud storage rm gs://YOUR-BUCKET-NAME/ada.jpg
+student_02_96d6f61bfddd@cloudshell:~ (qwiklabs-gcp-03-4093b17784b9)$ gcloud storage rm gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg
+Removing objects:
+Removing gs://qwiklabs-gcp-03-4093b17784b9/ada.jpg...                                                                                                                                         
+  Completed 1/1      
+
+  
