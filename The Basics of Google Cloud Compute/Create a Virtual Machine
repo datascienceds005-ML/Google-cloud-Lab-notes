@@ -1,0 +1,366 @@
+Google Skills
+What do you want to learn today?
+Current points:
+star
+34
+Current streak count
+0
+
+dashboard
+Dashboard
+book_2
+Catalog
+conversion_path
+Paths
+
+category
+Collections
+arrow_drop_down
+
+license
+Credentials
+arrow_drop_down
+subscriptions
+Subscriptions
+corporate_fare
+Organizations
+navigate_next
+The Basics of Google Cloud Compute
+navigate_next
+Create a Virtual Machine
+Apply your skills in Google Cloud console
+
+Contents
+Contents
+Create a Virtual Machine
+lab iconLab
+Create a Virtual Machine
+1 Credit
+25 minutes
+Introductory
+Updated 5 days ago
+ID: GSP001
+Task 4. Test your knowledge
+arrow_drop_down
+Score: 100 / 100
+timer
+1m
+left
+
+
+
+
+spark
+This lab may incorporate AI tools to support your learning.
+
+GSP001
+Google Cloud self-paced labs
+Overview
+Compute Engine allows you to create virtual machines (VMs) on Google infrastructure. These VMs can run different operating systems, including multiple flavors of Linux (Debian, Ubuntu, Suse, Red Hat, CoreOS) and Windows Server. You can run thousands of virtual CPUs on a system that is designed to be fast and to offer strong consistency of performance.
+
+In this hands-on lab, you create VM instances of various machine types using the Google Cloud console and the gcloud command line in Cloud Shell. You also learn how to connect an NGINX web server to your VM.
+
+Although you can copy and paste commands from the lab to the appropriate place, typing them yourself is recommended. This reinforces your understanding of the core concepts.
+
+Objectives
+In this lab, you learn how to perform the following tasks:
+
+Create a VM with the Cloud console.
+Create a VM with the gcloud command line.
+Deploy a web server and connect it to a VM.
+Prerequisites
+Familiarity with standard Linux text editors such as vim, emacs, or nano.
+Setup and requirements
+Before you click the Start Lab button
+Read these instructions. Labs are timed and you cannot pause them. The timer, which starts when you click Start Lab, shows how long Google Cloud resources are made available to you.
+
+This hands-on lab lets you do the lab activities in a real cloud environment, not in a simulation or demo environment. It does so by giving you new, temporary credentials you use to sign in and access Google Cloud for the duration of the lab.
+
+To complete this lab, you need:
+
+Access to a standard internet browser (Chrome browser recommended).
+Note: Use an Incognito (recommended) or private browser window to run this lab. This prevents conflicts between your personal account and the student account, which may cause extra charges incurred to your personal account.
+Time to complete the lab—remember, once you start, you cannot pause a lab.
+Note: Use only the student account for this lab. If you use a different Google Cloud account, you may incur charges to that account.
+How to start your lab and sign in to the Google Cloud console
+Click the Start Lab button. If you need to pay for the lab, a dialog opens for you to select your payment method. On the right is the Lab setup and access panel with the following:
+
+The Open Google Cloud console button
+The temporary credentials (username and password) that you must use for this lab
+Other information, if needed, to step through this lab
+Note that the lab timer is located near the top of the page, showing the remaining time.
+
+Click Open Google Cloud console (or right-click and select Open Link in Incognito Window if you are running the Chrome browser).
+
+The lab spins up resources, and then opens another tab that shows the Sign in page.
+
+Tip: Arrange the tabs in separate windows, side-by-side.
+
+Note: If you see the Choose an account dialog, click Use Another Account.
+If necessary, copy the Username below and paste it into the Sign in dialog.
+
+student-03-d4bfa6079e83@qwiklabs.net
+Copied!
+You can also find the Username in the Lab setup and access panel.
+
+Click Next.
+
+Copy the Password below and paste it into the Welcome dialog.
+
+bv2tQbeM1c5D
+Copied!
+You can also find the Password in the Lab setup and access panel.
+
+Click Next.
+
+Important: You must use the credentials the lab provides you. Do not use your Google Cloud account credentials.
+Note: Using your own Google Cloud account for this lab may incur extra charges.
+Click through the subsequent pages:
+
+Accept the terms and conditions.
+Do not add recovery options or two-factor authentication (because this is a temporary account).
+Do not sign up for free trials.
+After a few moments, the Google Cloud console opens in this tab.
+
+Note: To access Google Cloud products and services, click the Navigation menu or type the service or product name in the Search field. Navigation menu icon and Search field
+Activate Cloud Shell
+Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud. Cloud Shell provides command-line access to your Google Cloud resources.
+
+Click Activate Cloud Shell Activate Cloud Shell icon at the top of the Google Cloud console.
+
+Click through the following windows:
+
+Continue through the Cloud Shell information window.
+Authorize Cloud Shell to use your credentials to make Google Cloud API calls.
+When you are connected, you are already authenticated, and the project is set to your Project_ID, qwiklabs-gcp-01-7dc97a5fcb28. The output contains a line that declares the Project_ID for this session:
+
+Your Cloud Platform project in this session is set to qwiklabs-gcp-01-7dc97a5fcb28
+gcloud is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.
+
+(Optional) You can list the active account name with this command:
+gcloud auth list
+Copied!
+Click Authorize.
+Output:
+
+ACTIVE: *
+ACCOUNT: student-03-d4bfa6079e83@qwiklabs.net
+
+To set the active account, run:
+    $ gcloud config set account `ACCOUNT`
+(Optional) You can list the project ID with this command:
+gcloud config list project
+Copied!
+Output:
+
+[core]
+project = qwiklabs-gcp-01-7dc97a5fcb28
+Note: For full documentation of gcloud, in Google Cloud, refer to the gcloud CLI overview guide.
+Understanding Regions and Zones
+Certain Compute Engine resources live in regions or zones. A region is a specific geographical location where you can run your resources. Each region has one or more zones. For example, the us-central1 region denotes a region in the Central United States that has zones us-central1-a, us-central1-b, us-central1-c, and us-central1-f.
+
+Regions	Zones
+Western US	us-west1-a, us-west1-b
+Central US	us-central1-a, us-central1-b, us-central1-d, us-central1-f
+Eastern US	us-east1-b, us-east1-c, us-east1-d
+Western Europe	europe-west1-b, europe-west1-c, europe-west1-d
+Eastern Asia	asia-east1-a, asia-east1-b, asia-east1-c
+Resources that live in a zone are referred to as zonal resources. Virtual machine Instances and persistent disks live in a zone. To attach a persistent disk to a virtual machine instance, both resources must be in the same zone. Similarly, if you want to assign a static IP address to an instance, the instance must be in the same region as the static IP.
+
+Learn more about regions and zones and see a complete list in the Compute Engine page, Regions and zones documentation).
+Set the region and zone
+Run the following command to set the project region for this lab:
+gcloud config set compute/region europe-west3
+Copied!
+To create a variable for region, run the following command:
+export REGION=europe-west3
+Copied!
+Run the following command to create a variable for the zone:
+export ZONE=europe-west3-a
+Copied!
+Learn more from the Regions and zones documentation.
+
+Note: When you run gcloud on your own machine, the config settings are persisted across sessions. But in Cloud Shell, you need to set this for every new session or reconnection.
+Task 1. Create a new instance from the Cloud console
+In this section, you create new predefined machine types with Compute Engine from the Cloud console.
+
+In the Cloud console, on the Navigation menu (☰), click Compute Engine > VM Instances.
+
+This may take a minute to initialize for the first time.
+
+To create a new instance, click Create Instance.
+
+In the Machine configuration:
+
+Enter the values for the following fields:
+
+Field	Value	Additional Information
+Name	gcelab	Name for the VM instance
+Region	europe-west3	For more information about regions, see the Compute Engine guide, Regions and Zones.
+Zone	europe-west3-a	Note: Remember the zone that you selected to use later. For more information about zones, see the Compute Engine guide, Regions and Zones.
+Series	E2	
+Machine Type	e2-medium	This is an e2-medium, 2-CPU, 4GB RAM instance. Several machine types are available, ranging from micro instance types to 32-core/208GB RAM instance types. For more information, see the Compute Engine guide, About machine families.
+Note: A new project has a default resource quota , which may limit the number of CPU cores. You can request more when you work on projects outside this lab.
+Click OS and storage.
+
+Click Change to begin configuring your boot disk and select the values for:
+
+Operating system: Debian
+Version: Debian GNU/Linux 12 (bookworm)
+Boot disk type: Balanced persistent disk
+Size: 10 GB
+Several images are available, including Debian, Ubuntu, CoreOS, and premium images such as Red Hat Enterprise Linux and Windows Server. For more information, see the Operating System documentation.
+
+Click Networking.
+
+Firewall: Allow HTTP traffic
+Select this option in order to access a web server that you install later.
+
+Note: This automatically creates a firewall rule to allow HTTP traffic on port 80.
+Once all sections are configured, scroll down and click Create to launch your new virtual machine instance.
+
+It should take about a minute for the VM, gcelab, to be created. After gcelab is created, the VM Instances page lists it in the VM instances list.
+
+To use SSH to connect to the VM, click SSH next to the instance name, gcelab.
+
+This launches an SSH client directly from your browser.
+
+Note: Learn more about how to use SSH to connect to an instance from the Compute Engine guide, Connect to Linux VMs using Google tools .
+Task 2. Install an NGINX web server
+Now you install an NGINX web server, one of the most popular web servers in the world, to connect your VM to something.
+
+Run the following command to update the OS:
+
+sudo apt-get update
+Copied!
+Expected output (Debian version may vary):
+
+Get:1 file:/etc/apt/mirrors/debian.list Mirrorlist [30 B]
+Get:5 file:/etc/apt/mirrors/debian-security.list Mirrorlist [39 B]
+Get:7 https://packages.cloud.google.com/apt google-compute-engine-bookworm-stable InRelease [1321 B]
+Get:2 https://deb.debian.org/debian bookworm InRelease [151 kB]                         
+Get:3 https://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:4 https://deb.debian.org/debian bookworm-backports InRelease [59.0 kB]
+Hit:8 https://packages.cloud.google.com/apt cloud-sdk-bookworm InRelease
+Hit:6 https://deb.debian.org/debian-security bookworm-security InRelease
+Fetched 267 kB in 1s (274 kB/s)
+Reading package lists... Done
+Run the following command to install NGINX:
+
+sudo apt-get install -y nginx
+Copied!
+Expected output:
+
+ Reading package lists... Done
+ Building dependency tree
+ Reading state information... Done
+ The following NEW packages will be installed:
+ ...
+Run the following command to confirm that NGINX is running:
+
+ps auwx | grep nginx
+Copied!
+Expected output:
+
+ root      2330  0.0  0.0 159532  1628 ?        Ss   14:06   0:00 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+ www-data  2331  0.0  0.0 159864  3204 ?        S    14:06   0:00 nginx: worker process
+ www-data  2332  0.0  0.0 159864  3204 ?        S    14:06   0:00 nginx: worker process
+ root      2342  0.0  0.0  12780   988 pts/0    S+   14:07   0:00 grep nginx
+To see the web page, return to the Cloud console and click the External IP link in the row for your machine, or add the External IP value to http://EXTERNAL_IP/ in a new browser window or tab.
+
+A default web page should open that says: Welcome to nginx!
+
+To check your progress in this lab, click Check my progress below. A checkmark means you're successful.
+Assessment Completed!
+Create a Compute Engine instance and add an NGINX Server to your instance with necessary firewall rules.
+Assessment Completed!
+
+Task 3. Create a new instance with gcloud
+Instead of using the Cloud console to create a VM instance, use the command line tool gcloud, which is pre-installed in Google Cloud Shell. Cloud Shell is an interactive shell environment for Google Cloud loaded with all the development tools you need (gcloud, git, and others) and offers a persistent 5-GB home directory.
+
+Note: If you want to try this on your own machine, read the gcloud command line tool guide.
+In Cloud Shell, run the following gcloud command to create a new VM instance from the command line:
+
+gcloud compute instances create gcelab2 --machine-type e2-medium --zone=$ZONE
+Copied!
+Expected output:
+
+     Created [...gcelab2].
+     NAME: gcelab2
+     ZONE: europe-west3-a
+     MACHINE_TYPE: e2-medium
+     PREEMPTIBLE:
+     INTERNAL_IP: 10.128.0.3
+     EXTERNAL_IP: 34.136.51.150
+     STATUS: RUNNING
+To check your progress in this lab, click Check my progress below. A checkmark means you're successful.
+Assessment Completed!
+Create a new instance with gcloud.
+Assessment Completed!
+
+The new instance has these default values:
+
+The Debian GNU/Linux 12 (bookworm) image.
+The e2-medium machine type.
+A root persistent disk with the same name as the instance; the disk is automatically attached to the instance.
+When working in your own project, you can specify a custom machine type.
+
+To see all the defaults, run the following command:
+
+gcloud compute instances create --help
+Copied!
+Note: You can set the default region and zones that gcloud uses if you are always working within one region/zone and you don't want to append the --zone flag every time.
+To do this, run these commands:
+
+gcloud config set compute/zone ...
+
+gcloud config set compute/region ...
+
+To exit help, press CTRL+C.
+
+In the Cloud console, on the Navigation menu (Navigation menu icon), click Compute Engine > VM instances. Or if you still had the VM instances page open, just click Refresh. Your two new instances should be listed.
+
+You can also use SSH to connect to your instance via gcloud. Make sure to add your zone, or omit the --zone flag if you've set the option globally:
+
+gcloud compute ssh gcelab2 --zone=europe-west3-a
+Copied!
+Enter Y to continue.
+
+   Do you want to continue? (Y/n)
+Press Enter through the passphrase section to leave the passphrase empty.
+
+   Generating public/private rsa key pair.
+   Enter passphrase (empty for no passphrase)
+After connecting, disconnect from SSH by exiting from the remote shell with the command that follows:
+
+exit
+Copied!
+Task 4. Test your knowledge
+Test your knowledge about Google Cloud by taking the quiz. (Please select multiple correct options if necessary.)
+
+
+Through which of the following ways can you create a VM instance in Compute Engine?
+check
+The Cloud console
+check
+The gcloud command line tool
+
+Congratulations!
+Compute Engine is the foundation of Google Cloud's infrastructure as a service. You created a VM with Compute Engine and can now map your existing server infrastructure, load balancers, and network topology to Google Cloud.
+
+Take your next lab
+Continue your course with Get Started with Cloud Shell and gcloud, or check out the following lab:
+
+Provision Services with Google Cloud Marketplace
+Next steps / Learn more
+For an overview of VMs, refer to the Virtual machine instances documentation.
+Check out how to migrate VMs to the Google Cloud.
+Learn more about VPC networks.
+Google Cloud training and certification
+...helps you make the most of Google Cloud technologies. Our classes include technical skills and best practices to help you get up to speed quickly and continue your learning journey. We offer fundamental to advanced level training, with on-demand, live, and virtual options to suit your busy schedule. Certifications help you validate and prove your skill and expertise in Google Cloud technologies.
+
+Manual Last Updated June 3, 2026
+
+Lab Last Tested February 23, 2026
+
+Copyright 2026 Google LLC. All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.
