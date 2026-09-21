@@ -36,7 +36,18 @@ def _safe_unlink(p):
     except OSError:
         pass
 
-def cleanup_temp_artifacts():
+def cleanup_temp_artifacts(scope_dir=None):
+    """Remove dubpro_* artifacts. scope_dir=None → legacy global sweep.
+    scope_dir=<staging path> → ONLY that directory, so concurrent Space
+    sessions, Tab 5 assets, and other tabs are never nuked (multi-user safe)."""
+    if scope_dir:
+        if not os.path.isdir(scope_dir):
+            return
+        for name in os.listdir(scope_dir):
+            if name.startswith(PFX):
+                _safe_unlink(os.path.join(scope_dir, name))
+        gc.collect()
+        return
     temp_dir = tempfile.gettempdir()
     shutil.rmtree(os.path.join(temp_dir, PFX + "separated"), ignore_errors=True)
     for name in os.listdir(temp_dir):
@@ -96,12 +107,17 @@ def quick_extract_mono(video_path, boost_quiet=True):
                    stderr=subprocess.PIPE)
     return out
 
-def extract_and_isolate_bgm(video_path: str):
-    cleanup_temp_artifacts()
+def extract_and_isolate_bgm(video_path: str, work_dir: str | None = None):
+    """v2.3: outputs land inside `work_dir` (the session staging dir from
+    staging.py) when given, else legacy temp-root behaviour. No global
+    cleanup here — the caller calls cleanup_temp_artifacts(work_dir) itself,
+    so concurrent sessions and other tabs can never collide."""
     if not os.path.exists(video_path):
         raise RuntimeError(f"Video file not found: {video_path}")
 
-    temp_dir = tempfile.gettempdir()
+    temp_dir = work_dir or tempfile.gettempdir()
+    if work_dir:
+        os.makedirs(temp_dir, exist_ok=True)
     stereo_wav = os.path.join(temp_dir, PFX + "stereo.wav")
     mono_wav = os.path.join(temp_dir, PFX + "vocals_mono16k.wav")
     sep_root = os.path.join(temp_dir, PFX + "separated")
@@ -141,10 +157,7 @@ def extract_and_isolate_bgm(video_path: str):
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     return mono_wav, bgm_wav, voc_wav
 
-def _sanitize_tts_text(t):
-    t = re.sub(r"\[[^\]]*\]", " ", t)
-    t = re.sub(r"\b(?:Male|Female|Speaker)[-_ ]?\w*\b", " ", t)
-    return re.sub(r"\s+", " ", t).strip()[:1800]
+
 
 def _tts_sync(text, voice, out_path, retries=3):
     for attempt in range(retries):
@@ -174,6 +187,19 @@ async def _fetch_tts(sem, text, voice, out_path, retries=2):
                 logging.warning("TTS attempt %d failed (%s): %s", attempt + 1, out_path, e)
             await asyncio.sleep(0.8 * (attempt + 1))
         return False
+def _sanitize_tts_text(text: str) -> str:
+    """Clean one transcript line for edge-tts: strip [tags]/timestamps,
+    stray <ssml>/html, markdown punctuation artifacts and speaker labels;
+    collapse whitespace; hard-cap length. Restored v2.3 (was lost in the
+    hi-IN voice-map edit — engine line ~178 calls this)."""
+    t = str(text or "")
+    t = re.sub(r"\[[^\]]*\]", " ", t)                              # [music], [ts --> ts]
+    t = re.sub(r"<[^>]+>", " ", t)                                 # <break/> etc.
+    t = re.sub(r"[*_`#>|]", " ", t)                                # markdown artifacts
+    t = re.sub(r"\b(?:Male|Female|Speaker)[-_ ]?\d*\b", " ", t)    # speaker labels
+    t = re.sub(r"\s+", " ", t).strip()
+    return t[:1800]
+
 
 def generate_tts_batch(segments, temp_dir):
     loop = asyncio.new_event_loop()
@@ -325,6 +351,154 @@ def master_audio(wav_path, target_lufs=-16.0):
     gc.collect()
     return path
 
+def _track_mean_db(wav_path):
+    """Mean level (dBFS) of a wav — the audible-gate: a 'silent' dub track
+    fails loudly HERE instead of surfacing as a silent video later."""
+    data, _ = sf.read(wav_path)
+    if data.ndim > 1:
+        data = data.mean(axis=1)
+    rms = float(np.sqrt(np.mean(np.square(data)))) if len(data) else 0.0
+    return float(20 * np.log10(rms)) if rms > 0 else -120.0
+
+
+def build_dub_track(segments, tts_paths, temp_dir, sr=24000):
+    """v2.4 — anti-distortion rebuild:
+      • numpy float accumulation (replaces pydub int32 wrapping of float32
+        bytes — the source of the garbled 'gichbichana' artifacts)
+      • per-clip PEAK normalisation to -3 dBFS working level, gain limited
+        to ±12 dB (master limiter provides the final -1 dBFS ceiling)
+      • WSOLA speed-up clamped to 1.18x max (natural conversational bound);
+        short lines are centre-padded for lip-sync instead of slowed
+      • 12 ms micro-fades on every clip edge, 25 ms fade on the rare trim —
+        click-free without audible pumping
+    Returns (wav_path, placed_count, missing_indices)."""
+    order = sorted(range(len(segments)),
+                   key=lambda i: ts_to_seconds(segments[i]["start"]))
+    segs = [segments[i] for i in order]
+    clips = [tts_paths[i] for i in order]
+    if not segs:
+        raise RuntimeError("No segments to dub")
+
+    total_n = int((ts_to_seconds(segs[-1]["end"]) + 2.0) * sr)
+    track = np.zeros(total_n, dtype=np.float32)
+    fade = np.linspace(0.0, 1.0, max(2, int(0.012 * sr)), dtype=np.float32)
+    placed, missing = 0, []
+
+    for i, (seg, mp3) in enumerate(zip(segs, clips)):
+        text = _sanitize_tts_text(seg.get("text", ""))
+        if not text or text == "(silence)":
+            continue
+        p = mp3
+        if not p or not os.path.exists(p) or os.path.getsize(p) < 1024:
+            v = VOICE_MAP.get(seg.get("speaker", "Default"), VOICE_MAP["Default"])
+            p = _tts_sync(text, v, os.path.join(temp_dir, f"{PFX}tts_fix_{i}.mp3"))
+        if not p or not os.path.exists(p) or os.path.getsize(p) < 1024:
+            missing.append(i)
+            continue
+        y = _load_tts_clip(p, sr)
+        if y is None or len(y) < sr // 20:
+            missing.append(i)
+            continue
+        y = np.asarray(y, dtype=np.float32)
+
+        # peak-normalise to -3 dBFS, gain limited to ±12 dB
+        peak = float(np.max(np.abs(y))) + 1e-9
+        gain = float(np.clip((10.0 ** (-3.0 / 20.0)) / peak, 0.25, 4.0))
+        y *= gain
+
+        start_ms = int(ts_to_seconds(seg["start"]) * 1000)
+        win_ms = max(350, int((ts_to_seconds(seg["end"])
+                               - ts_to_seconds(seg["start"])) * 1000))
+        next_ms = (int(ts_to_seconds(segs[i + 1]["start"]) * 1000)
+                   if i + 1 < len(segs) else (total_n * 1000) // sr)
+        gap_ms = max(0, next_ms - start_ms - 50)
+        allowed_ms = win_ms + min(gap_ms, int(win_ms * 0.35) + 700)
+
+        need_ms = len(y) * 1000.0 / sr
+        if need_ms > win_ms:
+            rate = min(1.18, need_ms / win_ms)          # speed up max 18 %
+            y = librosa.effects.time_stretch(y, rate=rate)
+        n_allowed = int(allowed_ms / 1000.0 * sr)
+        if len(y) > n_allowed:                          # rare: gentle fade-trim
+            f = min(n_allowed, int(0.025 * sr))
+            y = y[:n_allowed].copy()
+            y[-f:] *= np.linspace(1.0, 0.0, f, dtype=np.float32)
+
+        # micro-fades at clip edges (kills clicks, inaudible at 12 ms)
+        f = min(len(y) // 2, fade.size)
+        y[:f] *= fade[:f]
+        y[-f:] *= fade[::-1][:f]
+
+        # centre inside the natural window (lip-sync) — never slow speech
+        n_win = int(win_ms / 1000.0 * sr)
+        pad = max(0, (n_win - len(y)) // 2) if len(y) < n_win else 0
+        i0 = min(total_n - 1, int(start_ms / 1000.0 * sr) + pad)
+        i1 = min(total_n, i0 + len(y))
+        if i1 > i0:
+            track[i0:i1] += y[:i1 - i0]
+            placed += 1
+
+    np.clip(track, -0.84, 0.84, out=track)              # hard ceiling -1.5 dBFS
+    out = os.path.join(temp_dir, PFX + "dub_continuous.wav")
+    sf.write(out, track, sr, subtype="PCM_16")
+    return out, placed, missing
+
+
+def mix_bgm_dub(bgm_wav, dub_wav, duck_db=-12.0, temp_dir=None,
+                voice_gain_db=3.0):
+    """v2.4 — dialogue-safe ducking mix:
+      • the dub bus is asplit into sidechain-TRIGGER + MIX-BUS — the previous
+        graph re-consumed the [dub] output label, which misroutes/loses the
+        dialogue on many ffmpeg builds (root cause of voice dropping)
+      • dialogue pre-gained +voice_gain_db → explicit volume leveling that
+        guarantees speech prominence (equivalent of amix weights=1 1.2,
+        without version-dependent weights parsing)
+      • amix normalize=0 (no default -6 dB bus halving), duration=longest,
+        dropout_transition=0 (no level jumps), rates matched via aformat
+      • hard-fails with stderr; no silent fallbacks"""
+    mix_out = os.path.join(temp_dir or tempfile.gettempdir(),
+                           PFX + "mix_pre_master.wav")
+    ratio = float(np.clip(abs(duck_db) / 3.0, 2.0, 6.0))
+    filt = (
+        "[0:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[bg];"
+        "[1:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[dub0];"
+        f"[dub0]volume={voice_gain_db:.1f}dB[dub1];"
+        "[dub1]asplit=2[trig][mix];"
+        f"[bg][trig]sidechaincompress=threshold=0.03:ratio={ratio:.1f}:"
+        "attack=8:release=280[bgd];"
+        "[bgd][mix]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0[a]"
+    )
+    res = subprocess.run(["ffmpeg", "-y", "-i", bgm_wav, "-i", dub_wav,
+                          "-filter_complex", filt, "-map", "[a]",
+                          "-ac", "2", mix_out],
+                         capture_output=True, text=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"BGM+dub mix failed: {res.stderr[-800:]}")
+    return mix_out
+
+def mux_video_audio_detached(video_path, audio_wav, temp_dir=None):
+    """Simple 2-input mux: audio comes ONLY from input 1 — source audio
+    streams are structurally unmappable. Output path is ALWAYS the last
+    positional argument (previous slicing bug made ffmpeg treat '192k'
+    as the output file and never wrote `out`)."""
+    out = os.path.join(temp_dir or tempfile.gettempdir(), PFX + "dubbed_final.mp4")
+    for vargs in (["-c:v", "copy"],
+                  ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20"]):
+        cmd = (["ffmpeg", "-y",
+                "-i", video_path,
+                "-i", audio_wav,
+                "-map", "0:v:0",
+                "-map", "1:a"]
+               + vargs +
+               ["-c:a", "aac", "-b:a", "192k",
+                "-movflags", "+faststart", "-shortest",
+                out])
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode == 0:
+            return out
+    raise RuntimeError(f"Mux failed: {res.stderr[-800:]}")
+
+    
 def mix_and_remux(video_path, bgm_wav, segments, tts_paths, duck_db, temp_dir,
                   vocals_wav=None, target_lufs=-16.0, apply_residual_mask=False):
     sr = 24000
@@ -394,26 +568,40 @@ def mix_and_remux(video_path, bgm_wav, segments, tts_paths, duck_db, temp_dir,
 
     output_video = os.path.join(temp_dir, PFX + "dubbed_final.mp4")
     ratio = float(np.clip(abs(duck_db) / 2.0, 2.0, 12.0))
+
+    # PATCH T5-DETACH (zero original-audio guarantee): the ONLY audio in the
+    # output is [a], built strictly from input 1 (Demucs BGM stem, ducked)
+    # + input 2 (Hindi TTS master). Input 0 contributes video ONLY; the
+    # negative map '-0:a?' actively strips every source audio stream.
     filt = (
         "[1:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[bg];"
         "[2:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[dub];"
         f"[bg][dub]sidechaincompress=threshold=0.03:ratio={ratio:.1f}:"
-        f"attack=8:release=280[bgd];"
+        "attack=8:release=280[bgd];"
         "[bgd][dub]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]"
     )
 
     def run_encode(vargs, f):
-        cmd = ["ffmpeg", "-y", "-i", video_path, "-i", bgm_wav, "-i", mastered,
-               "-filter_complex", f, "-map", "0:v:0", "-map", "[a]"] + vargs + \
-              ["-c:a", "aac", "-b:a", "192k", "-shortest",
-               "-movflags", "+faststart", output_video]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.PIPE)
+        cmd = (["ffmpeg", "-y", "-i", video_path, "-i", bgm_wav, "-i", mastered,
+                "-filter_complex", f,
+                "-map", "0:v:0",
+                "-map", "[a]",
+                "-map", "-0:a?",
+                "-sn", "-dn"] + vargs +
+               ["-c:a", "aac", "-b:a", "192k", "-shortest",
+                "-movflags", "+faststart", output_video])
+        res = subprocess.run(cmd, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.PIPE)
+        if res.returncode != 0:
+            logging.warning("encode attempt failed: %s",
+                            res.stderr.decode("utf-8", "ignore")[-400:])
+            raise subprocess.CalledProcessError(res.returncode, cmd,
+                                                stderr=res.stderr)
 
-    attempts = [ (["-c:v", "copy"], filt),
-                 (["-c:v", "copy"], filt.replace(":normalize=0", "")),
-                 (["-c:v", "libx264", "-preset", "veryfast", "-crf", "20"],
-                  filt.replace(":normalize=0", "")) ]
+
+    attempts = [(["-c:v", "copy"], filt),
+                (["-c:v", "libx264", "-preset", "veryfast", "-crf", "20"], filt)]
+
     last = None
     for vargs, f in attempts:
         try:
@@ -473,7 +661,7 @@ def verify_output(output_video, dub_master, segments, tts_missing,
         report["status"] = "warn"
 
     try:
-        qa_wav = os.path.join(tempfile.gettempdir(), PFX + "qa.wav")
+        qa_wav = os.path.join(os.path.dirname(output_video), PFX + "qa.wav")
         subprocess.run(["ffmpeg", "-y", "-i", output_video, "-vn", "-ac", "1",
                         "-ar", "16000", qa_wav], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
