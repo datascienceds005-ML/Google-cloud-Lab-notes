@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>InnerWhispers — Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          navy: { 950:'#0E1526', 900:'#111A2E', 800:'#182238', 700:'#212C45' },
+        },
+        boxShadow: { card: '0 1px 2px 0 rgba(16,24,40,0.04), 0 1px 3px 0 rgba(16,24,40,0.06)' }
+      }
+    }
+  }
+</script>
+<style>
+  :root { box-sizing: border-box; }
+  * { box-sizing: inherit; }
+  html, body { height: 100%; }
+  body { background:#F7F8FA; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #D8DCE3; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  .navlink { transition: background-color .15s ease, color .15s ease; }
+  .row-hover:hover { background-color: #FAFBFC; }
+  .dropdown-enter { animation: dropdownIn .12s ease-out; }
+  @keyframes dropdownIn { from { opacity:0; transform: translateY(-4px);} to { opacity:1; transform: translateY(0);} }
+  .group-chevron { transition: transform .15s ease; }
+</style>
+</head>
+<body class="text-[#111827]">
+
+<div class="flex h-screen w-full overflow-hidden relative">
+
+  <div id="sidebarBackdrop" class="hidden fixed inset-0 bg-black/30 z-40 lg:hidden"></div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[248px] shrink-0 bg-white border-r border-[#EEF0F3] flex flex-col h-full transform -translate-x-full transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 lg:transition-none lg:z-auto">
+    <div class="flex items-center justify-between gap-2 px-5 pt-6 pb-5">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-[#1D2939] flex items-center justify-center text-[13px] font-bold text-white">⌘</div>
+        <span class="text-[15px] font-semibold tracking-tight text-[#1D2939]">InnerWhispers</span>
+      </div>
+      <button id="sidebarCloseBtn" class="lg:hidden w-7 h-7 flex items-center justify-center text-[#98A2B3] hover:text-[#1D2939]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="px-4 mb-5">
+      <button id="searchBtn" class="w-full flex items-center justify-between gap-2 rounded-lg bg-[#F3F4F6] hover:bg-[#ECEDF0] transition-colors px-3 py-2 text-[13px] text-[#98A2B3]">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Search students, staff, content
+        </span>
+        <span class="text-[11px] border border-[#E4E7EC] rounded px-1.5 py-0.5 text-[#98A2B3]">⌘K</span>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-3 space-y-6 pb-4">
+      <div>
+        <ul class="space-y-0.5 text-[13.5px]">
+          <li>
+            <a href="dashboard.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="user-management.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              User Management
+            </a>
+          </li>
+          <li>
+            <button id="riskToggle" class="navlink w-full flex items-center justify-between px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]">
+              <span class="flex items-center gap-2.5">
+                <span class="relative inline-flex shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                  <span id="riskBadge" class="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-[3px] rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center leading-none">5</span>
+                </span>
+                Risk / Escalation Queue
+              </span>
+              <svg id="riskChevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform shrink-0"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <ul id="riskSub" class="hidden mt-0.5 ml-[26px] space-y-0.5 border-l border-[#E4E7EC] pl-3">
+              <li><a href="risk-queue.html?filter=open" data-nav class="navlink block px-2 py-[6px] rounded-md text-[#667085] hover:text-white hover:bg-[#F3F4F6] text-[13px]">Open Queue</a></li>
+              <li><a href="risk-queue.html?filter=monitoring" data-nav class="navlink block px-2 py-[6px] rounded-md text-[#667085] hover:text-white hover:bg-[#F3F4F6] text-[13px]">Monitoring</a></li>
+              <li><a href="risk-queue.html?filter=at-risk" data-nav class="navlink block px-2 py-[6px] rounded-md text-[#667085] hover:text-white hover:bg-[#F3F4F6] text-[13px]">At Risk</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <button id="clinicalGroupToggle" class="w-full flex items-center justify-between px-2 mb-2">
+          <span class="text-[10.5px] font-semibold tracking-wider text-[#98A2B3]">CLINICAL</span>
+          <svg id="clinicalChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-chevron text-[#98A2B3]"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <ul id="clinicalGroup" class="hidden space-y-0.5 text-[13.5px]">
+          <li><a href="patient-management.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>Patient Management</a></li>
+          <li><a href="doctor-management.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Doctor Management</a></li>
+          <li><a href="assessments.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>Assessments</a></li>
+          <li><a href="consultations-prescriptions.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Consultations &amp; Prescriptions</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <button id="contentGroupToggle" class="w-full flex items-center justify-between px-2 mb-2">
+          <span class="text-[10.5px] font-semibold tracking-wider text-[#98A2B3]">CONTENT</span>
+          <svg id="contentChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-chevron text-[#98A2B3]"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <ul id="contentGroup" class="hidden space-y-0.5 text-[13.5px]">
+          <li><a href="#" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>Content Management</a></li>
+          <li><a href="#" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Social Media Library</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <ul class="space-y-0.5 text-[13.5px]">
+          <li><a href="analytics-insights.html" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>Analytics / Insights</a></li>
+        </ul>
+      </div>
+
+      <!-- FINANCE (starts expanded on this page) -->
+      <div>
+        <button id="financeGroupToggle" class="w-full flex items-center justify-between px-2 mb-2">
+          <span class="text-[10.5px] font-semibold tracking-wider text-[#98A2B3]">FINANCE</span>
+          <svg id="financeChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-chevron rotate-90 text-[#98A2B3]"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <ul id="financeGroup" class="space-y-0.5 text-[13.5px]">
+          <li><a href="finance.html" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>Finance</span><span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span></a></li>
+          <li><a href="#" data-nav class="navlink active-nav flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg font-medium"><span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Budget</span><span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span></a></li>
+          <li><a href="expenses.html" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h16v20l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5V2z"/><path d="M8 7h8M8 11h8M8 15h4"/></svg>Expenses</span><span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span></a></li>
+          <li><a href="invoices.html" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>Invoices</span><span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span></a></li>
+        </ul>
+      </div>
+
+      <div>
+        <button id="governanceGroupToggle" class="w-full flex items-center justify-between px-2 mb-2">
+          <span class="text-[10.5px] font-semibold tracking-wider text-[#98A2B3]">GOVERNANCE</span>
+          <svg id="governanceChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-chevron text-[#98A2B3]"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <ul id="governanceGroup" class="hidden space-y-0.5 text-[13.5px]">
+          <li><a href="#" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Access Control</span><span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span></a></li>
+          <li><a href="#" data-nav class="navlink flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Audit Log</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="px-3 pb-2">
+      <ul class="space-y-0.5 text-[13.5px] mb-3">
+        <li>
+          <a href="#" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]">
+            <span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Notifications</span>
+            <span class="min-w-[16px] h-[16px] px-[4px] rounded-full bg-[#3B5BDB] text-white text-[9.5px] font-semibold flex items-center justify-center leading-none shrink-0">3</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav class="navlink flex items-center justify-between gap-2.5 px-2.5 py-[7px] rounded-lg text-[#475467] hover:bg-[#F3F4F6] hover:text-[#1D2939]">
+            <span class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>Settings</span>
+            <span class="text-[9.5px] font-semibold text-[#667085] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">Super Admin</span>
+          </a>
+        </li>
+      </ul>
+      <div class="relative">
+        <button id="profileBtn" class="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 hover:bg-[#F9FAFB] cursor-pointer">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-300 to-pink-400 flex items-center justify-center text-[11px] font-semibold shrink-0 text-white">AD</div>
+          <div class="min-w-0 text-left">
+            <p class="text-[13px] font-medium leading-tight truncate text-[#1D2939]">Admin</p>
+            <p class="text-[11.5px] text-[#98A2B3] leading-tight truncate">admin@innerwhispers.in</p>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="ml-auto shrink-0 text-[#98A2B3]"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg>
+        </button>
+        <div id="profileMenu" class="dropdown-panel hidden dropdown-enter absolute left-0 right-0 bottom-full mb-2 bg-white border border-[#EAECF0] rounded-xl shadow-lg z-30 py-1.5 text-[13px]">
+          <button data-action="Viewing profile" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+            View profile
+          </button>
+          <button data-action="Account settings opened" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+            Account settings
+          </button>
+          <button data-action="Switched workspace" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Switch workspace
+          </button>
+          <div class="my-1.5 border-t border-[#F0F1F3]"></div>
+          <button data-action="Signed out" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            Log out
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 items-end"></div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="flex-1 h-full overflow-y-auto w-full lg:w-auto">
+
+    <header class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 border-b border-[#EAECF0] bg-white/70 backdrop-blur sticky top-0 z-20">
+      <div class="flex items-center gap-3 text-[13px] text-[#6B7280] min-w-0">
+        <button id="menuBtn" class="lg:hidden w-8 h-8 -ml-1 shrink-0 rounded-lg hover:bg-[#F2F4F7] flex items-center justify-center text-[#475467]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="flex items-center gap-1.5 min-w-0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          <span class="hidden sm:inline">Admin</span>
+          <span class="hidden sm:inline text-[#D0D5DD]">/</span>
+          <a href="finance.html" class="hidden sm:inline hover:text-[#1D2939] hover:underline">Finance</a>
+          <span class="hidden sm:inline text-[#D0D5DD]">/</span>
+          <span class="text-[#111827] font-medium truncate">Budget</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <button id="notifBtn" class="relative w-8 h-8 rounded-full hover:bg-[#F2F4F7] flex items-center justify-center text-[#475467]">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span id="notifDot" class="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+          </button>
+          <div id="notifMenu" class="dropdown-panel hidden dropdown-enter absolute right-0 mt-2 w-[320px] max-w-[85vw] bg-white border border-[#EAECF0] rounded-xl shadow-lg z-30 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#F0F1F3]">
+              <p class="text-[13.5px] font-semibold text-[#1D2939]">Notifications</p>
+              <button id="markAllReadBtn" class="text-[12px] font-medium text-[#3B5BDB] hover:underline">Mark all as read</button>
+            </div>
+            <ul id="notifList" class="max-h-[320px] overflow-y-auto divide-y divide-[#F5F6F8]"></ul>
+            <button id="viewAllNotifBtn" class="w-full text-center text-[12.5px] font-medium text-[#475467] hover:bg-[#F9FAFB] py-2.5 border-t border-[#F0F1F3]">View all notifications</button>
+          </div>
+        </div>
+        <div class="relative">
+          <button id="settingsBtn" class="w-8 h-8 rounded-full hover:bg-[#F2F4F7] flex items-center justify-center text-[#475467]">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+          </button>
+          <div id="settingsMenu" class="dropdown-panel hidden dropdown-enter absolute right-0 mt-2 w-52 bg-white border border-[#EAECF0] rounded-xl shadow-lg z-30 py-1.5 text-[13px]">
+            <button data-action="Account settings opened" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+              Account settings
+            </button>
+            <button data-action="Notification preferences opened" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              Notification preferences
+            </button>
+            <button data-action="Appearance settings opened" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+              Appearance
+            </button>
+            <div class="my-1.5 border-t border-[#F0F1F3]"></div>
+            <button data-action="Help & Support opened" class="menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><circle cx="12" cy="17" r=".4" fill="currentColor"/></svg>
+              Help &amp; Support
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 sm:px-6 lg:px-8 py-6 max-w-[1400px]">
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
+        <div>
+          <h1 class="text-[20px] sm:text-[22px] font-semibold tracking-tight">Budget</h1>
+          <p class="text-[13.5px] text-[#6B7280] mt-1">Quarterly budget allocation and spend, by category.</p>
+        </div>
+        <button id="addBudgetBtn" class="flex items-center gap-1.5 text-[13px] font-medium rounded-lg px-3.5 py-2 bg-[#1D2939] text-white hover:bg-[#111827] shrink-0 shadow-card">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Add Budget Category
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[12.5px] text-[#6B7280] mb-2">Total Budget</p>
+          <p id="sumBudget" class="text-[22px] font-semibold leading-none">₹0</p>
+          <p class="text-[11px] text-[#98A2B3] mt-2">Q3 2026</p>
+        </div>
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[12.5px] text-[#6B7280] mb-2">Total Spent</p>
+          <p id="sumSpent" class="text-[22px] font-semibold leading-none">₹0</p>
+          <p class="text-[11px] text-[#98A2B3] mt-2">Across all categories</p>
+        </div>
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[12.5px] text-[#6B7280] mb-2">Remaining</p>
+          <p id="sumRemaining" class="text-[22px] font-semibold leading-none text-emerald-600">₹0</p>
+          <p class="text-[11px] text-[#98A2B3] mt-2">Available to allocate</p>
+        </div>
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[12.5px] text-[#6B7280] mb-2">Utilized</p>
+          <p id="sumUtilized" class="text-[22px] font-semibold leading-none text-amber-600">0%</p>
+          <p class="text-[11px] text-[#98A2B3] mt-2">Of total budget</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[13.5px] font-medium text-[#344054] mb-1">Utilization by Category</p>
+          <p class="text-[11px] text-[#98A2B3] mb-4">% of allocated budget spent so far</p>
+          <div id="utilChart" class="space-y-3.5"></div>
+        </div>
+        <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[13.5px] font-medium text-[#344054] mb-1">Spending by Category</p>
+          <p class="text-[11px] text-[#98A2B3] mb-5">Share of total spend, this quarter</p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
+            <div id="spendDonut" class="relative w-[150px] h-[150px] shrink-0 rounded-full" style="box-shadow: 0 1px 3px rgba(16,24,40,0.10);">
+              <div class="absolute inset-[21px] bg-white rounded-full flex flex-col items-center justify-center">
+                <p id="spendDonutTotal" class="text-[16px] font-semibold leading-none text-[#1D2939]">₹0</p>
+                <p class="text-[10px] text-[#98A2B3] mt-1 tracking-wide">spent</p>
+              </div>
+            </div>
+            <div id="spendDonutLegend" class="space-y-2 text-[12.5px] w-full sm:w-auto sm:min-w-[190px]"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-[#EAECF0] rounded-2xl p-4 sm:p-5 shadow-card mb-5">
+        <p class="text-[13.5px] font-medium text-[#344054] mb-3">Insights</p>
+        <ul id="insightsList" class="space-y-2 text-[13px] text-[#475467]"></ul>
+      </div>
+
+      <div class="bg-white border border-[#EAECF0] rounded-2xl shadow-card">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-4 sm:px-5 py-4 border-b border-[#F0F1F3]">
+          <div class="flex items-center gap-1 bg-[#F2F4F6] rounded-lg p-1 text-[12.5px] font-medium overflow-x-auto">
+            <button data-tab="all" class="status-tab px-3 py-1.5 rounded-md whitespace-nowrap">All</button>
+            <button data-tab="On Track" class="status-tab px-3 py-1.5 rounded-md whitespace-nowrap text-[#667085]">On Track</button>
+            <button data-tab="Near Limit" class="status-tab px-3 py-1.5 rounded-md whitespace-nowrap text-[#667085]">Near Limit</button>
+            <button data-tab="Over Budget" class="status-tab px-3 py-1.5 rounded-md whitespace-nowrap text-[#667085]">Over Budget</button>
+          </div>
+          <div class="relative flex-1 lg:flex-none lg:w-56">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="budgetSearch" type="text" placeholder="Search category" class="text-[13px] border border-[#E4E7EC] rounded-lg pl-8 pr-3 py-[7px] w-full outline-none focus:border-[#94A3E8] placeholder:text-[#98A2B3]">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-[13px] min-w-[820px]">
+            <thead>
+              <tr class="border-b border-[#EAECF0] text-[#667085] text-[12px]">
+                <th class="text-left font-medium px-4 sm:px-5 py-2.5">Category</th>
+                <th class="text-left font-medium px-2 py-2.5">Budgeted</th>
+                <th class="text-left font-medium px-2 py-2.5">Spent</th>
+                <th class="text-left font-medium px-2 py-2.5">Remaining</th>
+                <th class="text-left font-medium px-2 py-2.5">% Used</th>
+                <th class="text-left font-medium px-2 py-2.5">Status</th>
+                <th class="text-left font-medium px-2 py-2.5 w-10"></th>
+              </tr>
+            </thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-[#F0F1F3] text-[12.5px] text-[#667085]">
+          <span id="paginationInfo">Showing 0 of 0</span>
+          <div class="flex items-center gap-1.5">
+            <button class="px-2.5 py-1 rounded-lg border border-[#E4E7EC] bg-white text-[#98A2B3] cursor-not-allowed" disabled>Prev</button>
+            <button class="px-2.5 py-1 rounded-lg border border-[#E4E7EC] bg-white text-[#98A2B3] cursor-not-allowed" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-8"></div>
+    </main>
+  </div>
+</div>
+
+<div id="rowActionMenu" class="dropdown-panel hidden dropdown-enter fixed bg-white border border-[#EAECF0] rounded-xl shadow-lg z-40 py-1.5 text-[13px] w-44"></div>
+
+<!-- Add / Edit Budget modal -->
+<div id="budgetFormOverlay" class="hidden fixed inset-0 z-[60] items-center justify-center bg-black/30 px-4">
+  <div class="dropdown-enter bg-white rounded-2xl shadow-lg w-full max-w-md">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-[#F0F1F3]">
+      <p id="budgetFormTitle" class="text-[15px] font-semibold text-[#1D2939]">Add Budget Category</p>
+      <button id="budgetFormCloseBtn" type="button" class="w-7 h-7 flex items-center justify-center text-[#98A2B3] hover:text-[#1D2939] rounded-lg hover:bg-[#F3F4F6]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="budgetForm" class="px-5 py-4 space-y-4">
+      <div>
+        <label for="budgetFormCategory" class="block text-[12.5px] font-medium text-[#344054] mb-1.5">Category name</label>
+        <input id="budgetFormCategory" type="text" required placeholder="e.g. Community Events" class="w-full text-[13px] border border-[#E4E7EC] rounded-lg px-3 py-2 outline-none focus:border-[#94A3E8] placeholder:text-[#98A2B3]">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="budgetFormAmount" class="block text-[12.5px] font-medium text-[#344054] mb-1.5">Budgeted amount (₹)</label>
+          <input id="budgetFormAmount" type="number" min="0" required placeholder="e.g. 20000" class="w-full text-[13px] border border-[#E4E7EC] rounded-lg px-3 py-2 outline-none focus:border-[#94A3E8] placeholder:text-[#98A2B3]">
+        </div>
+        <div>
+          <label for="budgetFormSpent" class="block text-[12.5px] font-medium text-[#344054] mb-1.5">Spent so far (₹)</label>
+          <input id="budgetFormSpent" type="number" min="0" placeholder="0" class="w-full text-[13px] border border-[#E4E7EC] rounded-lg px-3 py-2 outline-none focus:border-[#94A3E8] placeholder:text-[#98A2B3]">
+        </div>
+      </div>
+      <p id="budgetFormError" class="hidden text-[12px] text-red-600">Please enter a category name and a valid budgeted amount.</p>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button id="budgetFormCancelBtn" type="button" class="text-[13px] font-medium border border-[#E4E7EC] rounded-lg px-3.5 py-2 bg-white hover:bg-[#F9FAFB] text-[#344054]">Cancel</button>
+        <button id="budgetFormSubmitBtn" type="submit" class="text-[13px] font-medium rounded-lg px-3.5 py-2 bg-[#1D2939] text-white hover:bg-[#111827]">Add Category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+let budgets = [
+  { id:1, category:'Clinical Staff Payouts',   budgeted:250000, spent:182000, notes:[ { author:'Admin', time:'1 Jul 2026', text:'Covers doctor and peer support payouts for Q3.' } ] },
+  { id:2, category:'Platform Operations',      budgeted:80000,  spent:64500,  notes:[ { author:'Admin', time:'1 Jul 2026', text:'Hosting, infrastructure and telehealth tooling.' } ] },
+  { id:3, category:'Content & Social Media',   budgeted:45000,  spent:38200,  notes:[ { author:'Admin', time:'1 Jul 2026', text:'Design tools, freelance writers, scheduling software.' } ] },
+  { id:4, category:'NAU Program & Partnerships', budgeted:60000, spent:45000, notes:[ { author:'Admin', time:'1 Jul 2026', text:'Coordination, travel and onboarding for NAU cohorts.' } ] },
+  { id:5, category:'Marketing & Outreach',     budgeted:35000,  spent:31800,  notes:[ { author:'Admin', time:'1 Jul 2026', text:'Paid social campaigns and campus outreach.' } ] },
+  { id:6, category:'Admin & Misc',             budgeted:20000,  spent:9400,   notes:[ { author:'Admin', time:'1 Jul 2026', text:'Office supplies and other overhead.' } ] },
+];
+
+const iconMap = {
+  signup:  { bg:'bg-purple-50',  color:'text-purple-500',  path:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+  risk:    { bg:'bg-red-50',     color:'text-red-500',     path:'<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>' },
+  consult: { bg:'bg-amber-50',   color:'text-amber-500',   path:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>' },
+  content: { bg:'bg-emerald-50', color:'text-emerald-500', path:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6M9 9h1"/>' },
+};
+
+const notifications = [
+  { icon:'risk',    title:'Risk Flag Opened',       sub:"Aisha K. flagged 'High' risk after PHQ-9 assessment", time:'9:40 AM',  unread:true },
+  { icon:'signup',  title:'New Signups',            sub:'24 new signups today across patients and staff',      time:'10:12 AM', unread:true },
+  { icon:'consult', title:'Consultation Scheduled', sub:'Dr. B. Navya Mounika booked for 3:00 PM',              time:'11:05 AM', unread:true },
+  { icon:'content', title:'Content Published',      sub:"'Managing Exam Stress' article went live",             time:'8:30 AM',  unread:false },
+];
+
+function formatINR(n) { return '₹' + n.toLocaleString('en-IN'); }
+function statusFor(pct) {
+  if (pct > 100) return 'Over Budget';
+  if (pct >= 85) return 'Near Limit';
+  return 'On Track';
+}
+const budgetStatusStyle = {
+  'On Track':   'bg-emerald-50 text-emerald-600',
+  'Near Limit': 'bg-amber-50 text-amber-600',
+  'Over Budget':'bg-red-50 text-red-600',
+};
+const catColors = ['#3B5BDB', '#9333EA', '#059669', '#F59E0B', '#DC2626', '#6366F1', '#0EA5E9', '#EA580C'];
+
+let currentStatus = 'all';
+const budgetBody = document.getElementById('budgetBody');
+
+function getFilteredBudgets() {
+  const q = document.getElementById('budgetSearch').value.trim().toLowerCase();
+  return budgets.filter(b => {
+    const pct = b.budgeted ? (b.spent / b.budgeted) * 100 : 0;
+    const status = statusFor(pct);
+    if (currentStatus !== 'all' && status !== currentStatus) return false;
+    if (q && !b.category.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderBudgets() {
+  const rows = getFilteredBudgets();
+  budgetBody.innerHTML = '';
+  if (rows.length === 0) {
+    budgetBody.innerHTML = `<tr><td colspan="7" class="text-center text-[#98A2B3] text-[13px] py-8">No categories match your filters.</td></tr>`;
+  }
+  rows.forEach(b => {
+    const pct = b.budgeted ? Math.round((b.spent / b.budgeted) * 100) : 0;
+    const remaining = b.budgeted - b.spent;
+    const status = statusFor(pct);
+    const s = budgetStatusStyle[status];
+    const remColor = remaining < 0 ? 'text-red-600' : 'text-[#667085]';
+    const tr = document.createElement('tr');
+    tr.className = 'row-hover border-b border-[#F0F1F3] last:border-0';
+    tr.innerHTML = `
+      <td class="px-4 sm:px-5 py-3">
+        <button class="budget-open-btn text-left hover:underline text-[#1D2939] font-medium" data-id="${b.id}">${b.category}</button>
+      </td>
+      <td class="px-2 py-3 text-[#667085] whitespace-nowrap">${formatINR(b.budgeted)}</td>
+      <td class="px-2 py-3 text-[#667085] whitespace-nowrap">${formatINR(b.spent)}</td>
+      <td class="px-2 py-3 ${remColor} whitespace-nowrap">${formatINR(remaining)}</td>
+      <td class="px-2 py-3 text-[#667085]">${pct}%</td>
+      <td class="px-2 py-3"><span class="inline-flex items-center ${s} text-[12px] font-medium px-2 py-0.5 rounded-md">${status}</span></td>
+      <td class="px-2 py-3">
+        <button class="row-action-btn w-8 h-8 rounded-lg hover:bg-[#F2F4F7] flex items-center justify-center text-[#667085]" data-id="${b.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </button>
+      </td>
+    `;
+    budgetBody.appendChild(tr);
+  });
+
+  document.getElementById('paginationInfo').textContent = `Showing ${rows.length} of ${budgets.length}`;
+
+  document.querySelectorAll('.budget-open-btn').forEach(btn => {
+    btn.addEventListener('click', () => openBudgetForm('edit', Number(btn.dataset.id)));
+  });
+  document.querySelectorAll('.row-action-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openRowActionMenu(btn, Number(btn.dataset.id));
+    });
+  });
+
+  updateOverview();
+}
+renderBudgets();
+
+document.getElementById('budgetSearch').addEventListener('input', renderBudgets);
+
+document.querySelectorAll('.status-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    currentStatus = tab.dataset.tab;
+    document.querySelectorAll('.status-tab').forEach(t => {
+      const isActive = t === tab;
+      t.classList.toggle('bg-white', isActive);
+      t.classList.toggle('shadow-card', isActive);
+      t.classList.toggle('text-[#1D2939]', isActive);
+      t.classList.toggle('text-[#667085]', !isActive);
+    });
+    renderBudgets();
+  });
+});
+document.querySelector('.status-tab[data-tab="all"]').classList.add('bg-white', 'shadow-card', 'text-[#1D2939]');
+document.querySelector('.status-tab[data-tab="all"]').classList.remove('text-[#667085]');
+
+/* ---------------- Overview: KPIs + charts + insights ---------------- */
+function updateOverview() {
+  const totalBudget = budgets.reduce((s, b) => s + b.budgeted, 0);
+  const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
+  const remaining = totalBudget - totalSpent;
+  const utilPct = totalBudget ? Math.round((totalSpent / totalBudget) * 100) : 0;
+
+  document.getElementById('sumBudget').textContent = formatINR(totalBudget);
+  document.getElementById('sumSpent').textContent = formatINR(totalSpent);
+  document.getElementById('sumRemaining').textContent = formatINR(remaining);
+  document.getElementById('sumUtilized').textContent = utilPct + '%';
+
+  /* Utilization by Category (horizontal bar list) */
+  const utilEl = document.getElementById('utilChart');
+  utilEl.innerHTML = '';
+  budgets.forEach((b, i) => {
+    const pct = b.budgeted ? Math.min(100, Math.round((b.spent / b.budgeted) * 100)) : 0;
+    const overPct = b.budgeted && b.spent > b.budgeted;
+    const barColor = overPct ? '#DC2626' : (pct >= 85 ? '#F59E0B' : '#3B5BDB');
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="flex items-center justify-between text-[12px] mb-1">
+        <span class="text-[#475467] truncate pr-2">${b.category}</span>
+        <span class="text-[#98A2B3] font-medium shrink-0">${Math.round(b.budgeted ? (b.spent / b.budgeted) * 100 : 0)}%</span>
+      </div>
+      <div class="h-2 rounded-full bg-[#F2F4F7] overflow-hidden">
+        <div class="h-full rounded-full" style="width:${pct}%; background:${barColor}"></div>
+      </div>
+    `;
+    utilEl.appendChild(row);
+  });
+
+  /* Spending by Category (donut) */
+  const spendTotal = budgets.reduce((s, b) => s + b.spent, 0);
+  let cumulative = 0;
+  const segments = [];
+  budgets.forEach((b, i) => {
+    const pct = spendTotal ? (b.spent / spendTotal) * 100 : 0;
+    segments.push(`${catColors[i % catColors.length]} ${cumulative}% ${cumulative + pct}%`);
+    cumulative += pct;
+  });
+  const donutEl = document.getElementById('spendDonut');
+  donutEl.style.background = spendTotal ? `conic-gradient(${segments.join(', ')})` : '#F3F4F6';
+  document.getElementById('spendDonutTotal').textContent = formatINR(spendTotal);
+
+  const legendEl = document.getElementById('spendDonutLegend');
+  legendEl.innerHTML = '';
+  budgets.forEach((b, i) => {
+    const pct = spendTotal ? Math.round((b.spent / spendTotal) * 100) : 0;
+    const li = document.createElement('div');
+    li.className = 'flex items-center gap-2';
+    li.innerHTML = `<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${catColors[i % catColors.length]}"></span><span class="text-[#344054] truncate">${b.category}</span><span class="ml-auto text-[#1D2939] font-semibold shrink-0">${pct}%</span>`;
+    legendEl.appendChild(li);
+  });
+
+  /* Insights */
+  const overBudget = budgets.filter(b => b.spent > b.budgeted);
+  const nearLimit = budgets.filter(b => { const p = b.budgeted ? (b.spent/b.budgeted)*100 : 0; return p >= 85 && p <= 100; });
+  const mostRemaining = budgets.slice().sort((a, b) => (b.budgeted - b.spent) - (a.budgeted - a.spent))[0];
+
+  const insights = [];
+  insights.push(`${utilPct}% of the total Q3 budget has been used (${formatINR(totalSpent)} of ${formatINR(totalBudget)}).`);
+  insights.push(overBudget.length
+    ? `${overBudget.length} categor${overBudget.length === 1 ? 'y is' : 'ies are'} over budget: ${overBudget.map(b => b.category).join(', ')}.`
+    : `No categories are currently over budget.`);
+  if (nearLimit.length) {
+    insights.push(`${nearLimit.length} categor${nearLimit.length === 1 ? 'y is' : 'ies are'} nearing its limit (85%+ utilized).`);
+  }
+  if (mostRemaining) {
+    insights.push(`${mostRemaining.category} has the most headroom left, with ${formatINR(mostRemaining.budgeted - mostRemaining.spent)} remaining.`);
+  }
+
+  const insightsList = document.getElementById('insightsList');
+  insightsList.innerHTML = '';
+  insights.forEach(text => {
+    const li = document.createElement('li');
+    li.className = 'flex items-start gap-2';
+    li.innerHTML = `<svg class="text-[#98A2B3] shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>${text}</span>`;
+    insightsList.appendChild(li);
+  });
+}
+
+/* ---------------- Row action menu ---------------- */
+const rowActionMenu = document.getElementById('rowActionMenu');
+
+function openRowActionMenu(btn, budgetId) {
+  rowActionMenu.innerHTML = `
+    <button data-row-action="edit" class="row-menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-[#F9FAFB] text-[#344054]">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit category
+    </button>
+    <div class="my-1.5 border-t border-[#F0F1F3]"></div>
+    <button data-row-action="delete" class="row-menu-item w-full flex items-center gap-2.5 text-left px-3.5 py-2.5 hover:bg-red-50 text-red-600">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      Delete category
+    </button>
+  `;
+  const btnRect = btn.getBoundingClientRect();
+  rowActionMenu.style.top = (btnRect.bottom + 4) + 'px';
+  rowActionMenu.style.left = Math.max(8, btnRect.right - 176) + 'px';
+  rowActionMenu.classList.remove('hidden');
+  rowActionMenu.querySelectorAll('.row-menu-item').forEach(item => {
+    item.addEventListener('click', () => handleRowAction(item.dataset.rowAction, budgetId));
+  });
+}
+
+function handleRowAction(action, budgetId) {
+  const b = budgets.find(x => x.id === budgetId);
+  if (!b) return;
+  if (action === 'edit') {
+    openBudgetForm('edit', budgetId);
+  } else if (action === 'delete') {
+    budgets = budgets.filter(x => x.id !== budgetId);
+    showToast(`${b.category} removed`);
+    renderBudgets();
+  }
+  rowActionMenu.classList.add('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  if (!rowActionMenu.classList.contains('hidden') && !rowActionMenu.contains(e.target) && !e.target.closest('.row-action-btn')) {
+    rowActionMenu.classList.add('hidden');
+  }
+});
+
+/* ---------------- Add / Edit Budget form ---------------- */
+let formMode = 'add';
+let formBudgetId = null;
+
+const budgetFormOverlay = document.getElementById('budgetFormOverlay');
+const budgetForm = document.getElementById('budgetForm');
+const budgetFormTitle = document.getElementById('budgetFormTitle');
+const budgetFormSubmitBtn = document.getElementById('budgetFormSubmitBtn');
+const budgetFormCategory = document.getElementById('budgetFormCategory');
+const budgetFormAmount = document.getElementById('budgetFormAmount');
+const budgetFormSpent = document.getElementById('budgetFormSpent');
+const budgetFormError = document.getElementById('budgetFormError');
+
+function openBudgetForm(mode, budgetId) {
+  formMode = mode;
+  formBudgetId = budgetId ?? null;
+  budgetFormError.classList.add('hidden');
+
+  if (mode === 'edit') {
+    const b = budgets.find(x => x.id === budgetId);
+    if (!b) return;
+    budgetFormTitle.textContent = 'Edit Budget Category';
+    budgetFormSubmitBtn.textContent = 'Save Changes';
+    budgetFormCategory.value = b.category;
+    budgetFormAmount.value = b.budgeted;
+    budgetFormSpent.value = b.spent;
+  } else {
+    budgetFormTitle.textContent = 'Add Budget Category';
+    budgetFormSubmitBtn.textContent = 'Add Category';
+    budgetForm.reset();
+  }
+
+  budgetFormOverlay.classList.remove('hidden');
+  budgetFormOverlay.classList.add('flex');
+  setTimeout(() => budgetFormCategory.focus(), 0);
+}
+function closeBudgetForm() {
+  budgetFormOverlay.classList.add('hidden');
+  budgetFormOverlay.classList.remove('flex');
+}
+
+budgetForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const category = budgetFormCategory.value.trim();
+  const budgeted = Number(budgetFormAmount.value);
+  const spent = Number(budgetFormSpent.value) || 0;
+  if (!category || !budgeted || budgeted <= 0) {
+    budgetFormError.classList.remove('hidden');
+    return;
+  }
+  budgetFormError.classList.add('hidden');
+
+  if (formMode === 'edit' && formBudgetId != null) {
+    const b = budgets.find(x => x.id === formBudgetId);
+    if (b) {
+      b.category = category;
+      b.budgeted = budgeted;
+      b.spent = spent;
+      showToast(`${category} updated`);
+    }
+  } else {
+    const newId = budgets.length ? Math.max(...budgets.map(b => b.id)) + 1 : 1;
+    budgets.push({ id:newId, category, budgeted, spent, notes:[ { author:'Admin', time:'Just now', text:'Category added.' } ] });
+    showToast(`${category} added`);
+  }
+
+  closeBudgetForm();
+  renderBudgets();
+});
+
+document.getElementById('addBudgetBtn').addEventListener('click', () => openBudgetForm('add'));
+document.getElementById('budgetFormCloseBtn').addEventListener('click', closeBudgetForm);
+document.getElementById('budgetFormCancelBtn').addEventListener('click', closeBudgetForm);
+budgetFormOverlay.addEventListener('click', (e) => { if (e.target === budgetFormOverlay) closeBudgetForm(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !budgetFormOverlay.classList.contains('hidden')) closeBudgetForm();
+});
+
+/* ---------------- Sidebar interactions ---------------- */
+const sidebarEl = document.getElementById('sidebar');
+const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+const menuBtn = document.getElementById('menuBtn');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+
+function openSidebar() {
+  sidebarEl.classList.remove('-translate-x-full');
+  sidebarEl.classList.add('translate-x-0');
+  sidebarBackdrop.classList.remove('hidden');
+}
+function closeSidebar() {
+  sidebarEl.classList.add('-translate-x-full');
+  sidebarEl.classList.remove('translate-x-0');
+  sidebarBackdrop.classList.add('hidden');
+}
+menuBtn.addEventListener('click', openSidebar);
+sidebarCloseBtn.addEventListener('click', closeSidebar);
+sidebarBackdrop.addEventListener('click', closeSidebar);
+
+document.querySelectorAll('[data-nav]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    if (el.tagName === 'A' && el.getAttribute('href') && el.getAttribute('href') !== '#') return;
+    e.preventDefault();
+    document.querySelectorAll('[data-nav]').forEach(n => n.classList.remove('active-nav'));
+    el.classList.add('active-nav');
+    if (window.innerWidth < 1024) closeSidebar();
+  });
+});
+
+const riskToggle = document.getElementById('riskToggle');
+const riskSub = document.getElementById('riskSub');
+const riskChevron = document.getElementById('riskChevron');
+riskToggle.addEventListener('click', () => {
+  riskSub.classList.toggle('hidden');
+  riskChevron.classList.toggle('rotate-90');
+});
+
+function setupGroupToggle(btn, list, chevron) {
+  btn.addEventListener('click', () => {
+    list.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-90');
+  });
+}
+setupGroupToggle(document.getElementById('clinicalGroupToggle'), document.getElementById('clinicalGroup'), document.getElementById('clinicalChevron'));
+setupGroupToggle(document.getElementById('contentGroupToggle'), document.getElementById('contentGroup'), document.getElementById('contentChevron'));
+setupGroupToggle(document.getElementById('financeGroupToggle'), document.getElementById('financeGroup'), document.getElementById('financeChevron'));
+setupGroupToggle(document.getElementById('governanceGroupToggle'), document.getElementById('governanceGroup'), document.getElementById('governanceChevron'));
+
+/* ---------------- Toast ---------------- */
+function showToast(message) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'bg-[#101828] text-white text-[13px] font-medium rounded-lg px-4 py-2.5 shadow-lg opacity-0 translate-y-2 transition-all duration-200';
+  toast.textContent = message;
+  container.appendChild(toast);
+  requestAnimationFrame(() => { toast.classList.remove('opacity-0', 'translate-y-2'); });
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => toast.remove(), 200);
+  }, 2200);
+}
+
+/* ---------------- Generic dropdown system ---------------- */
+function closeAllDropdowns(except) {
+  document.querySelectorAll('.dropdown-panel').forEach(m => { if (m !== except) m.classList.add('hidden'); });
+}
+function setupDropdown(btn, menu, onOpen) {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = menu.classList.contains('hidden');
+    closeAllDropdowns(willOpen ? menu : null);
+    menu.classList.toggle('hidden');
+    if (willOpen && onOpen) onOpen();
+  });
+}
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.dropdown-panel').forEach(m => {
+    if (m.id !== 'rowActionMenu' && !m.classList.contains('hidden') && !m.contains(e.target)) m.classList.add('hidden');
+  });
+});
+
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', () => {
+    showToast(item.dataset.action || 'Done');
+    closeAllDropdowns();
+  });
+});
+
+/* ---------------- Notifications ---------------- */
+const notifListEl = document.getElementById('notifList');
+const notifDot = document.getElementById('notifDot');
+
+function renderNotifications() {
+  notifListEl.innerHTML = '';
+  notifications.forEach((n, idx) => {
+    const ic = iconMap[n.icon];
+    const li = document.createElement('li');
+    li.className = 'flex items-start gap-2.5 px-4 py-3 cursor-pointer hover:bg-[#F9FAFB]';
+    li.innerHTML = `
+      <div class="w-7 h-7 rounded-full ${ic.bg} ${ic.color} flex items-center justify-center shrink-0 mt-0.5">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic.path}</svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-[13px] font-medium text-[#1D2939] leading-tight">${n.title}</p>
+        <p class="text-[12px] text-[#667085] leading-snug">${n.sub}</p>
+        <p class="text-[11px] text-[#98A2B3] mt-1">${n.time}</p>
+      </div>
+      ${n.unread ? '<span class="w-2 h-2 rounded-full bg-[#3B5BDB] mt-1.5 shrink-0"></span>' : ''}
+    `;
+    li.addEventListener('click', () => {
+      if (n.unread) {
+        notifications[idx].unread = false;
+        renderNotifications();
+        updateNotifDot();
+      }
+    });
+    notifListEl.appendChild(li);
+  });
+}
+function updateNotifDot() {
+  const hasUnread = notifications.some(n => n.unread);
+  notifDot.classList.toggle('hidden', !hasUnread);
+}
+renderNotifications();
+updateNotifDot();
+
+const notifBtn = document.getElementById('notifBtn');
+const notifMenu = document.getElementById('notifMenu');
+setupDropdown(notifBtn, notifMenu);
+
+document.getElementById('markAllReadBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  notifications.forEach(n => n.unread = false);
+  renderNotifications();
+  updateNotifDot();
+  showToast('All notifications marked as read');
+});
+document.getElementById('viewAllNotifBtn').addEventListener('click', () => {
+  closeAllDropdowns();
+  showToast('Opening all notifications');
+});
+
+setupDropdown(document.getElementById('settingsBtn'), document.getElementById('settingsMenu'));
+setupDropdown(document.getElementById('profileBtn'), document.getElementById('profileMenu'));
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+  document.getElementById('budgetSearch').focus();
+});
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    document.getElementById('budgetSearch').focus();
+  }
+});
+</script>
+
+<style>
+  .active-nav { background-color: #F3F4F6; color: #1D2939; }
+</style>
+</body>
+</html>
